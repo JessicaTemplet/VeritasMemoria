@@ -1,0 +1,41 @@
+services:
+  veritas-memoria:
+    image: veritas-memoria:demo
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Set an expiry date for the demo build. Remove or leave empty for no limit.
+      # Format: YYYY-MM-DD
+      args:
+        DEMO_EXPIRES: ""
+    ports:
+      # Access the demo at http://localhost:8000
+      - "8000:8000"
+    volumes:
+      # Memories are saved here — maps to a folder on the user's machine.
+      - vm_user_data:/app/user_data
+    environment:
+      # ── LLM provider ──────────────────────────────────────────────────
+      # Default is copy_paste (no API key needed).
+      # Set VM_LLM_PROVIDER=openai and supply OPENAI_API_KEY to use live AI.
+      VM_LLM_PROVIDER: ${VM_LLM_PROVIDER:-copy_paste}
+      VM_LLM_MODEL: ${VM_LLM_MODEL:-}
+      # ── Optional API keys (leave blank if using copy_paste mode) ──────
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # ── Storage ───────────────────────────────────────────────────────
+      VM_MEMORY_DIR: /app/user_data
+      VM_BACKEND: sqlite
+      VM_MAX_STORAGE_GB: "2.0"
+      # ── Privacy ───────────────────────────────────────────────────────
+      VM_PII_SCRUB: "1"
+      VM_PII_SCRUB_MODE: mask
+      # ── Auth (off by default for demo) ────────────────────────────────
+      VM_API_AUTH: "0"
+      # ── Logging ───────────────────────────────────────────────────────
+      VM_LOG_LEVEL: WARNING
+    restart: unless-stopped
+
+volumes:
+  vm_user_data:
+    driver: local
